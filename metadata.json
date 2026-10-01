@@ -1,0 +1,6 @@
+{
+  "name": "OUR IBADAH",
+  "description": "A private, peaceful two-person Islamic lifestyle and Ibadah companion for prayer tracking, Quran, Dhikr, and shared spiritual growth.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

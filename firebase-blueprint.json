@@ -1,0 +1,126 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "User profile with timezone, location, and calculation method",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "maxLength": 64 },
+        "name": { "type": "string", "maxLength": 64 },
+        "country": { "type": "string", "maxLength": 64 },
+        "city": { "type": "string", "maxLength": 64 },
+        "timezone": { "type": "string", "maxLength": 64 },
+        "calculationMethod": { "type": "string", "maxLength": 64 },
+        "dailyQuranGoal": { "type": "number" },
+        "pointsGoal": { "type": "number" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["userId", "name", "timezone", "country", "city"]
+    },
+    "PrayerRecord": {
+      "title": "PrayerRecord",
+      "description": "Prayer record with scheduled time, actual completion timestamp, and calculated points",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "userId": { "type": "string", "maxLength": 64 },
+        "date": { "type": "string", "maxLength": 32 },
+        "prayerName": { "type": "string", "enum": ["fajr", "dhuhr", "asr", "maghrib", "isha"] },
+        "scheduledTime": { "type": "string", "maxLength": 32 },
+        "actualTime": { "type": "string", "maxLength": 32 },
+        "status": { "type": "string", "enum": ["completed", "missed", "unrecorded"] },
+        "points": { "type": "number" },
+        "timezone": { "type": "string", "maxLength": 64 },
+        "edited": { "type": "boolean" },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["id", "userId", "date", "prayerName", "status", "points", "timezone"]
+    },
+    "PointEvent": {
+      "title": "PointEvent",
+      "description": "Individual point transaction ensuring auditability and duplicate protection",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "userId": { "type": "string", "maxLength": 64 },
+        "date": { "type": "string", "maxLength": 32 },
+        "activityType": { "type": "string", "maxLength": 64 },
+        "activityId": { "type": "string", "maxLength": 64 },
+        "points": { "type": "number" },
+        "timestamp": { "type": "string" }
+      },
+      "required": ["id", "userId", "date", "activityType", "activityId", "points", "timestamp"]
+    },
+    "QuranLog": {
+      "title": "QuranLog",
+      "description": "Daily Quran reading record with pages and points",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "userId": { "type": "string", "maxLength": 64 },
+        "date": { "type": "string", "maxLength": 32 },
+        "pagesRead": { "type": "number" },
+        "pointsEarned": { "type": "number" },
+        "currentJuz": { "type": "number" },
+        "lastUpdated": { "type": "string" }
+      },
+      "required": ["id", "userId", "date", "pagesRead", "pointsEarned"]
+    },
+    "SharedDua": {
+      "title": "SharedDua",
+      "description": "Dua accessible to both partners in the shared journey",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "userId": { "type": "string", "maxLength": 64 },
+        "authorName": { "type": "string", "maxLength": 64 },
+        "title": { "type": "string", "maxLength": 500 },
+        "category": { "type": "string", "maxLength": 64 },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "userId", "title", "createdAt"]
+    },
+    "PrivateReflection": {
+      "title": "PrivateReflection",
+      "description": "Private spiritual reflection accessible strictly to the author",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "userId": { "type": "string", "maxLength": 64 },
+        "date": { "type": "string", "maxLength": 32 },
+        "gratitude": { "type": "string", "maxLength": 1000 },
+        "improvements": { "type": "string", "maxLength": 1000 },
+        "duas": { "type": "string", "maxLength": 1000 },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "userId", "date", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "User profile with timezone and preferences"
+    },
+    "/prayers/{prayerId}": {
+      "schema": "PrayerRecord",
+      "description": "Prayer logs strictly owned by userId"
+    },
+    "/point_events/{eventId}": {
+      "schema": "PointEvent",
+      "description": "Point transaction ledger strictly owned by userId"
+    },
+    "/quran_logs/{logId}": {
+      "schema": "QuranLog",
+      "description": "Daily Quran reading records"
+    },
+    "/shared_duas/{duaId}": {
+      "schema": "SharedDua",
+      "description": "Duas shared between Person 1 and Person 2"
+    },
+    "/reflections/{reflectionId}": {
+      "schema": "PrivateReflection",
+      "description": "Private journal reflections owned strictly by author"
+    }
+  }
+}

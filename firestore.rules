@@ -1,0 +1,68 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Default deny all access
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    // Profiles: users can only manage their own profile
+    match /users/{userId} {
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow create, update: if isOwner(userId);
+      allow delete: if false;
+    }
+
+    // Prayers: user owns their own prayer records. Partner can read for shared journey only if logged in
+    match /prayers/{prayerId} {
+      allow get: if isSignedIn();
+      allow list: if isSignedIn() && (resource.data.userId == request.auth.uid || resource.data.userId != null);
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow update: if isSignedIn() && resource.data.userId == request.auth.uid && request.resource.data.userId == request.auth.uid;
+      allow delete: if isSignedIn() && resource.data.userId == request.auth.uid;
+    }
+
+    // Point events: strictly immutable ledger owned by user
+    match /point_events/{eventId} {
+      allow get: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow list: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if false;
+    }
+
+    // Quran logs: user reads and updates their own reading progress
+    match /quran_logs/{logId} {
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow create, update: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow delete: if isSignedIn() && resource.data.userId == request.auth.uid;
+    }
+
+    // Shared duas: both partners can read and add, but only author can update or delete
+    match /shared_duas/{duaId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isSignedIn() && resource.data.userId == request.auth.uid;
+    }
+
+    // Private reflections: STRICTLY private to the author. Partner CANNOT read or write.
+    match /reflections/{reflectionId} {
+      allow read: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow write: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+    }
+  }
+}
